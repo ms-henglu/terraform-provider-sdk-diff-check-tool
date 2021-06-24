@@ -1,0 +1,1 @@
+# terraform-provider-sdk-diff-check-tool
