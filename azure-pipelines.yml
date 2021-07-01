@@ -1,0 +1,110 @@
+# Go
+# Build your Go project.
+# Add steps that test, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/go
+parameters:
+- name: branch
+  displayName: Test Branch of microsoft/terraform-provider-azurerm
+  type: string
+  default: demo-network-sdk-update-2020-11-01
+- name: servicePath
+  displayName: Service Path
+  type: string
+  default: ./azurerm/internal/services/network
+- name: testPrefix
+  displayName: Test Prefix
+  type: string
+  default: TestAccPublicIpStatic_standard
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  GOBIN:  '$(GOPATH)/bin' # Go binaries path
+  GOROOT: '/opt/hostedtoolcache/go/1.16.5/x64' # Go installation path
+  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+  pluginSdkDirPath: '$(GOPATH)/src/github.com/ms-henglu'
+  pluginSdkPath: '$(GOPATH)/src/github.com/ms-henglu/terraform-plugin-sdk'
+  msProviderDirPath: '$(GOPATH)/src/github.com/microsoft'
+  msProviderPath: '$(GOPATH)/src/github.com/microsoft/terraform-provider-azurerm'
+
+steps:
+- bash: |
+    go env
+    go version
+    which go
+  displayName: 'Upgrade Go to latest version'
+
+- bash: |
+    export GOROOT=/opt/hostedtoolcache/go/1.16.5/x64
+    export PATH=$GOROOT/bin:$PATH
+    export GO111MODULE=on
+    go get -u github.com/metacpp/parallel-go-test@master
+  displayName: 'Installing tools for build'
+
+- bash: |
+    wget https://releases.hashicorp.com/terraform/0.14.9/terraform_0.14.9_linux_amd64.zip
+    sudo apt-get update -y
+    sudo apt-get install -y unzip
+    sudo unzip terraform_0.14.9_linux_amd64.zip
+    sudo mv ./terraform /usr/local/bin/
+  displayName: 'Installing Terraform'
+  
+- script: |
+    mkdir -p '$(pluginSdkDirPath)'
+    cd '$(pluginSdkDirPath)'
+    pwd
+    git clone https://github.com/ms-henglu/terraform-plugin-sdk.git
+    cd terraform-plugin-sdk
+    pwd
+    git fetch origin
+    git checkout feature-support-state-import-from-different-version-v2.6.1
+    git status
+  displayName: 'Clone terraform-plugin-sdk'
+
+- script: |
+    mkdir -p '$(msProviderDirPath)'
+    cd '$(msProviderDirPath)'
+    pwd
+    git clone https://ms-henglu:$PAT@github.com/microsoft/terraform-provider-azurerm.git
+    cd terraform-provider-azurerm
+    pwd
+    git fetch origin
+    git checkout ${{ parameters.branch }}
+    git status
+  displayName: 'Clone terraform-provider-azurerm'
+  env:
+    PAT: $(PAT)
+
+- script: |
+    cd '$(msProviderPath)'
+    pwd
+    export GOROOT=/opt/hostedtoolcache/go/1.16.5/x64
+    export PATH=$GOROOT/bin:$PATH
+    go mod edit -replace github.com/hashicorp/terraform-plugin-sdk/v2='$(pluginSdkPath)'
+    go mod vendor
+    git add -uv
+    git status
+  displayName: 'Replace terraform-plugin-sdk'
+
+- bash: |
+    cd '$(msProviderPath)'
+    pwd
+    export GOROOT=/opt/hostedtoolcache/go/1.16.5/x64
+    export PATH=$GOROOT/bin:$PATH
+    echo ${{ parameters.servicePath }}
+    echo ${{ parameters.testPrefix }}
+    echo $TF_ACC_PROVIDER_VERSION
+    go test -v -timeout=3h '${{ parameters.servicePath }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
+  displayName: 'Running Acc Test'
+  env:
+    TF_ACC: $(TF_ACC)
+    ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+    ARM_CLIENT_ID: $(CLIENT_ID)
+    ARM_CLIENT_SECRET: $(CLIENT_SECRET)
+    ARM_TENANT_ID: $(ARM_TENANT_ID)
+    ARM_TEST_LOCATION: $(ARM_TEST_LOCATION)
+    ARM_TEST_LOCATION_ALT: $(ARM_TEST_LOCATION_ALT)
+    ARM_TEST_LOCATION_ALT2: $(ARM_TEST_LOCATION_ALT2)
+    TF_ACC_PROVIDER_VERSION: $(PROVIDER_VERSION)
