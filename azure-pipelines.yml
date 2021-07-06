@@ -72,6 +72,8 @@ steps:
     pwd
     git fetch origin
     git checkout ${{ parameters.branch }}
+    git config --global user.email "henglu@microsoft.com"
+    git config --global user.name "Heng Lu"
     git cherry-pick e9309e88a2dc07e0486b9afdda1a1be7b81cc412
     git status
   displayName: 'Clone terraform-provider-azurerm'
