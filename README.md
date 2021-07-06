@@ -9,8 +9,9 @@ This solution is used to detect SDK behavioral change when upgrade SDK for terra
    1. Input test branch.
    2. Input tested package path.
    3. Input tested Acc test's prefix.
-   4. Input standard provider version if needed. It will use latest released provider by default.
-   5. Edit other environment variable if needed.
+   4. Edit other environment variable if needed.
+      1. Input standard provider version if needed. It will use latest released provider by default.
+      2. It will automatically add missing import step by default. To disable this feature, set `TF_ACC_FIX_IMPORT=false`
 
 ## How to use in local?
 Replace `terraform-provider-azurerm`'s `terraform-plugin-sdk` with `https://github.com/ms-henglu/terraform-plugin-sdk/tree/feature-support-state-import-from-different-version-v2.6.1`. Detailed steps are listed as the following.
