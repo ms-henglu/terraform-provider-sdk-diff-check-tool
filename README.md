@@ -14,9 +14,9 @@ This solution is used to detect SDK behavioral change when upgrade SDK for terra
       2. It will automatically add missing import step by default. To disable this feature, set `TF_ACC_FIX_IMPORT=false`
 
 ## How to use in local?
-Replace `terraform-provider-azurerm`'s `terraform-plugin-sdk` with `https://github.com/ms-henglu/terraform-plugin-sdk/tree/feature-support-state-import-from-different-version-v2.6.1`. Detailed steps are listed as the following.
+Replace `terraform-provider-azurerm`'s `terraform-plugin-sdk` with `https://github.com/ms-henglu/terraform-plugin-sdk/tree/feature-support-state-import-from-different-version-v2.7.0`. Detailed steps are listed as the following.
 1. clone `https://github.com/ms-henglu/terraform-plugin-sdk.git` to local directory  (ex:`C:\Users\henglu\go\src\github.com\ms-henglu\terraform-plugin-sdk`)
-2. switch to `feature-support-state-import-from-different-version-v2.6.1` branch
+2. switch to `feature-support-state-import-from-different-version-v2.7.0` branch
 3. open `terraform-provider-azurerm/go.mod`, and add the following line
 `
 replace github.com/hashicorp/terraform-plugin-sdk/v2 => C:\Users\henglu\go\src\github.com\ms-henglu\terraform-plugin-sdk

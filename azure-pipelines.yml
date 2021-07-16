@@ -59,7 +59,7 @@ steps:
     cd terraform-plugin-sdk
     pwd
     git fetch origin
-    git checkout feature-support-state-import-from-different-version-v2.6.1
+    git checkout feature-support-state-import-from-different-version-v2.7.0
     git status
   displayName: 'Clone terraform-plugin-sdk'
 
