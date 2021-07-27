@@ -21,7 +21,7 @@ pool:
 
 variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/opt/hostedtoolcache/go/1.16.5/x64' # Go installation path
+  GOROOT: '/opt/hostedtoolcache/go/1.16.6/x64' # Go installation path
   GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
   pluginSdkDirPath: '$(GOPATH)/src/github.com/ms-henglu'
@@ -37,7 +37,7 @@ steps:
   displayName: 'Upgrade Go to latest version'
 
 - bash: |
-    export GOROOT=/opt/hostedtoolcache/go/1.16.5/x64
+    export GOROOT=/opt/hostedtoolcache/go/1.16.6/x64
     export PATH=$GOROOT/bin:$PATH
     export GO111MODULE=on
     go get -u github.com/metacpp/parallel-go-test@master
@@ -83,7 +83,7 @@ steps:
 - script: |
     cd '$(msProviderPath)'
     pwd
-    export GOROOT=/opt/hostedtoolcache/go/1.16.5/x64
+    export GOROOT=/opt/hostedtoolcache/go/1.16.6/x64
     export PATH=$GOROOT/bin:$PATH
     go mod edit -replace github.com/hashicorp/terraform-plugin-sdk/v2='$(pluginSdkPath)'
     go mod vendor
@@ -94,7 +94,7 @@ steps:
 - bash: |
     cd '$(msProviderPath)'
     pwd
-    export GOROOT=/opt/hostedtoolcache/go/1.16.5/x64
+    export GOROOT=/opt/hostedtoolcache/go/1.16.6/x64
     export PATH=$GOROOT/bin:$PATH
     echo ${{ parameters.servicePath }}
     echo ${{ parameters.testPrefix }}
