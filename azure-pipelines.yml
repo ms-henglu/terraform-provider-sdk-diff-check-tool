@@ -10,7 +10,7 @@ parameters:
 - name: servicePath
   displayName: Service Path
   type: string
-  default: ./azurerm/internal/services/network
+  default: ./internal/services/network
 - name: testPrefix
   displayName: Test Prefix
   type: string
@@ -21,7 +21,7 @@ pool:
 
 variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/opt/hostedtoolcache/go/1.16.7/x64' # Go installation path
+  GOROOT: '/usr/local/go' # Go installation path
   GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
   pluginSdkDirPath: '$(GOPATH)/src/github.com/ms-henglu'
@@ -31,13 +31,15 @@ variables:
 
 steps:
 - bash: |
-    go env
+    wget https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
+    sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.16.5.linux-amd64.tar.gz
+    export GOROOT=/usr/local/go
+    export PATH=$GOROOT/bin:$PATH
     go version
-    which go
   displayName: 'Upgrade Go to latest version'
 
 - bash: |
-    export GOROOT=/opt/hostedtoolcache/go/1.16.7/x64
+    export GOROOT=/usr/local/go
     export PATH=$GOROOT/bin:$PATH
     export GO111MODULE=on
     go get -u github.com/metacpp/parallel-go-test@master
@@ -83,7 +85,7 @@ steps:
 - script: |
     cd '$(msProviderPath)'
     pwd
-    export GOROOT=/opt/hostedtoolcache/go/1.16.7/x64
+    export GOROOT=/usr/local/go
     export PATH=$GOROOT/bin:$PATH
     go mod edit -replace github.com/hashicorp/terraform-plugin-sdk/v2='$(pluginSdkPath)'
     go mod vendor
@@ -94,7 +96,7 @@ steps:
 - bash: |
     cd '$(msProviderPath)'
     pwd
-    export GOROOT=/opt/hostedtoolcache/go/1.16.7/x64
+    export GOROOT=/usr/local/go
     export PATH=$GOROOT/bin:$PATH
     echo ${{ parameters.servicePath }}
     echo ${{ parameters.testPrefix }}
