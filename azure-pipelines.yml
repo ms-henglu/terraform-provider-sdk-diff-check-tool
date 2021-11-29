@@ -88,6 +88,7 @@ steps:
     export GOROOT=/usr/local/go
     export PATH=$GOROOT/bin:$PATH
     go mod edit -replace github.com/hashicorp/terraform-plugin-sdk/v2='$(pluginSdkPath)'
+    go mod tidy
     go mod vendor
     git add -uv
     git status
