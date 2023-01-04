@@ -3,109 +3,54 @@
 # Add steps that test, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/go
 parameters:
+- name: fork
+  displayName: Target fork of terraform-provider-azurerm repo
+  type: string
+  default: hashicorp
 - name: branch
-  displayName: Test Branch of microsoft/terraform-provider-azurerm
+  displayName: Branch of terraform-provider-azurerm repo
   type: string
-  default: demo-network-sdk-update-2020-11-01
-- name: servicePath
-  displayName: Service Path
+  default: main
+- name: rp
+  displayName: Resource Provider
   type: string
-  default: ./internal/services/network
+  default: network
 - name: testPrefix
   displayName: Test Prefix
   type: string
   default: TestAccPublicIpStatic_standard
 
 pool:
-  vmImage: ubuntu-latest
-
-variables:
-  GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/usr/local/go' # Go installation path
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
-  pluginSdkDirPath: '$(GOPATH)/src/github.com/ms-henglu'
-  pluginSdkPath: '$(GOPATH)/src/github.com/ms-henglu/terraform-plugin-sdk'
-  msProviderDirPath: '$(GOPATH)/src/github.com/microsoft'
-  msProviderPath: '$(GOPATH)/src/github.com/microsoft/terraform-provider-azurerm'
+  name: pool-ubuntu-2004
 
 steps:
-- bash: |
-    wget https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
-    sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.16.5.linux-amd64.tar.gz
-    export GOROOT=/usr/local/go
-    export PATH=$GOROOT/bin:$PATH
-    go version
-  displayName: 'Upgrade Go to latest version'
-
-- bash: |
-    export GOROOT=/usr/local/go
-    export PATH=$GOROOT/bin:$PATH
-    export GO111MODULE=on
-    go get -u github.com/metacpp/parallel-go-test@master
-  displayName: 'Installing tools for build'
-
-- bash: |
-    wget https://releases.hashicorp.com/terraform/0.14.9/terraform_0.14.9_linux_amd64.zip
-    sudo apt-get update -y
-    sudo apt-get install -y unzip
-    sudo unzip terraform_0.14.9_linux_amd64.zip
-    sudo mv ./terraform /usr/local/bin/
-  displayName: 'Installing Terraform'
-  
-- script: |
-    mkdir -p '$(pluginSdkDirPath)'
-    cd '$(pluginSdkDirPath)'
-    pwd
-    git clone https://github.com/ms-henglu/terraform-plugin-sdk.git
-    cd terraform-plugin-sdk
-    pwd
-    git fetch origin
-    git checkout feature-support-state-import-from-different-version-v2.8.0
-    git status
-  displayName: 'Clone terraform-plugin-sdk'
+- task: GoTool@0
+  displayName: "Install Go"
+  inputs:
+    version: 1.19
 
 - script: |
-    mkdir -p '$(msProviderDirPath)'
-    cd '$(msProviderDirPath)'
-    pwd
-    git clone https://ms-henglu:$PAT@github.com/microsoft/terraform-provider-azurerm.git
+    git clone https://ms-henglu:$PAT@github.com/ms-henglu/terraform-provider-azurerm.git
     cd terraform-provider-azurerm
-    pwd
-    git fetch origin
-    git checkout ${{ parameters.branch }}
+    git remote add testrepo https://github.com/${{ parameters.fork }}/terraform-provider-azurerm.git
+    git fetch testrepo
+    git checkout --track testrepo/${{ parameters.branch }}
     git config --global user.email "henglu@microsoft.com"
     git config --global user.name "Heng Lu"
-    git cherry-pick 366c34c91c26e844fdab631e6042df6b7632151e
+    git cherry-pick 001879171e7badd9e8dafd19cae66aedace5c584
     git status
   displayName: 'Clone terraform-provider-azurerm'
   env:
     PAT: $(PAT)
 
-- script: |
-    cd '$(msProviderPath)'
-    pwd
-    export GOROOT=/usr/local/go
-    export PATH=$GOROOT/bin:$PATH
-    go mod edit -replace github.com/hashicorp/terraform-plugin-sdk/v2='$(pluginSdkPath)'
-    go mod tidy
-    go mod vendor
-    git add -uv
-    git status
-  displayName: 'Replace terraform-plugin-sdk'
-
 - bash: |
-    cd '$(msProviderPath)'
-    pwd
-    export GOROOT=/usr/local/go
-    export PATH=$GOROOT/bin:$PATH
-    echo ${{ parameters.servicePath }}
+    echo ${{ parameters.rp }}
     echo ${{ parameters.testPrefix }}
     echo $TF_ACC_PROVIDER_VERSION
-    go test -v -timeout=3h '${{ parameters.servicePath }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
+    go test -v -timeout=3h './internal/services/${{ parameters.rp }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
   displayName: 'Running Acc Test'
   env:
-    TF_ACC: $(TF_ACC)
+    TF_ACC: true
     ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
     ARM_CLIENT_ID: $(CLIENT_ID)
     ARM_CLIENT_SECRET: $(CLIENT_SECRET)
@@ -114,4 +59,3 @@ steps:
     ARM_TEST_LOCATION_ALT: $(ARM_TEST_LOCATION_ALT)
     ARM_TEST_LOCATION_ALT2: $(ARM_TEST_LOCATION_ALT2)
     TF_ACC_PROVIDER_VERSION: $(PROVIDER_VERSION)
-    TF_ACC_FIX_IMPORT: $(TF_ACC_FIX_IMPORT)
