@@ -44,6 +44,7 @@ steps:
     PAT: $(PAT)
 
 - bash: |
+    cd terraform-provider-azurerm
     echo ${{ parameters.rp }}
     echo ${{ parameters.testPrefix }}
     echo $TF_ACC_PROVIDER_VERSION
