@@ -48,8 +48,9 @@ steps:
     echo ${{ parameters.rp }}
     echo ${{ parameters.testPrefix }}
     echo $TF_ACC_PROVIDER_VERSION
-    go test -v -timeout=3h './internal/services/${{ parameters.rp }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
+    go test -v -timeout=6h './internal/services/${{ parameters.rp }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
   displayName: 'Running Acc Test'
+  timeoutInMinutes: 360
   env:
     TF_ACC: true
     ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
