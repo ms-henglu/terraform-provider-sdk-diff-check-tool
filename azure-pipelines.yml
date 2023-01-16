@@ -18,7 +18,7 @@ parameters:
 - name: testPrefix
   displayName: Test Prefix
   type: string
-  default: TestAccPublicIpStatic_standard
+  default: TestAcc
 
 pool:
   name: pool-ubuntu-2004
@@ -61,3 +61,5 @@ steps:
     ARM_TEST_LOCATION_ALT: $(ARM_TEST_LOCATION_ALT)
     ARM_TEST_LOCATION_ALT2: $(ARM_TEST_LOCATION_ALT2)
     TF_ACC_PROVIDER_VERSION: $(PROVIDER_VERSION)
+    ARM_PROVIDER_ENHANCED_VALIDATION: false
+    ARM_SKIP_PROVIDER_REGISTRATION: true
