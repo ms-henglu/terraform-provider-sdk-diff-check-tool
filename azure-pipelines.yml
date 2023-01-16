@@ -20,46 +20,48 @@ parameters:
   type: string
   default: TestAcc
 
-pool:
-  name: pool-ubuntu-2004
-
-steps:
-- task: GoTool@0
-  displayName: "Install Go"
-  inputs:
-    version: 1.19
-
-- script: |
-    git clone https://ms-henglu:$PAT@github.com/ms-henglu/terraform-provider-azurerm.git
-    cd terraform-provider-azurerm
-    git remote add testrepo https://github.com/${{ parameters.fork }}/terraform-provider-azurerm.git
-    git fetch testrepo
-    git checkout --track testrepo/${{ parameters.branch }}
-    git config --global user.email "henglu@microsoft.com"
-    git config --global user.name "Heng Lu"
-    git cherry-pick 001879171e7badd9e8dafd19cae66aedace5c584
-    git status
-  displayName: 'Clone terraform-provider-azurerm'
-  env:
-    PAT: $(PAT)
-
-- bash: |
-    cd terraform-provider-azurerm
-    echo ${{ parameters.rp }}
-    echo ${{ parameters.testPrefix }}
-    echo $TF_ACC_PROVIDER_VERSION
-    go test -v -timeout=6h './internal/services/${{ parameters.rp }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
-  displayName: 'Running Acc Test'
+jobs:
+- job: Job_1
+  pool: pool-ubuntu-2004
   timeoutInMinutes: 360
-  env:
-    TF_ACC: true
-    ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-    ARM_CLIENT_ID: $(CLIENT_ID)
-    ARM_CLIENT_SECRET: $(CLIENT_SECRET)
-    ARM_TENANT_ID: $(ARM_TENANT_ID)
-    ARM_TEST_LOCATION: $(ARM_TEST_LOCATION)
-    ARM_TEST_LOCATION_ALT: $(ARM_TEST_LOCATION_ALT)
-    ARM_TEST_LOCATION_ALT2: $(ARM_TEST_LOCATION_ALT2)
-    TF_ACC_PROVIDER_VERSION: $(PROVIDER_VERSION)
-    ARM_PROVIDER_ENHANCED_VALIDATION: false
-    ARM_SKIP_PROVIDER_REGISTRATION: true
+  displayName: Breaking Change Detection
+  steps:
+  - task: GoTool@0
+    displayName: "Install Go"
+    inputs:
+      version: 1.19
+
+  - script: |
+      git clone https://ms-henglu:$PAT@github.com/ms-henglu/terraform-provider-azurerm.git
+      cd terraform-provider-azurerm
+      git remote add testrepo https://github.com/${{ parameters.fork }}/terraform-provider-azurerm.git
+      git fetch testrepo
+      git checkout --track testrepo/${{ parameters.branch }}
+      git config --global user.email "henglu@microsoft.com"
+      git config --global user.name "Heng Lu"
+      git cherry-pick 001879171e7badd9e8dafd19cae66aedace5c584
+      git status
+    displayName: 'Clone terraform-provider-azurerm'
+    env:
+      PAT: $(PAT)
+
+  - bash: |
+      cd terraform-provider-azurerm
+      echo ${{ parameters.rp }}
+      echo ${{ parameters.testPrefix }}
+      echo $TF_ACC_PROVIDER_VERSION
+      go test -v -timeout=6h './internal/services/${{ parameters.rp }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
+    displayName: 'Running Acc Test'
+    timeoutInMinutes: 360
+    env:
+      TF_ACC: true
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+      ARM_CLIENT_ID: $(CLIENT_ID)
+      ARM_CLIENT_SECRET: $(CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_TEST_LOCATION: $(ARM_TEST_LOCATION)
+      ARM_TEST_LOCATION_ALT: $(ARM_TEST_LOCATION_ALT)
+      ARM_TEST_LOCATION_ALT2: $(ARM_TEST_LOCATION_ALT2)
+      TF_ACC_PROVIDER_VERSION: $(PROVIDER_VERSION)
+      ARM_PROVIDER_ENHANCED_VALIDATION: false
+      ARM_SKIP_PROVIDER_REGISTRATION: true
