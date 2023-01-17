@@ -23,7 +23,7 @@ parameters:
 jobs:
 - job: Job_1
   pool: pool-ubuntu-2004
-  timeoutInMinutes: 360
+  timeoutInMinutes: 0
   displayName: Breaking Change Detection
   steps:
   - task: GoTool@0
@@ -52,7 +52,6 @@ jobs:
       echo $TF_ACC_PROVIDER_VERSION
       go test -v -timeout=6h './internal/services/${{ parameters.rp }}' -run='${{ parameters.testPrefix }}' -parallel=$(PARALLELISM)
     displayName: 'Running Acc Test'
-    timeoutInMinutes: 360
     env:
       TF_ACC: true
       ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
