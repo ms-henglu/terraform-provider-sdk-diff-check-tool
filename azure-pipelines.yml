@@ -29,7 +29,7 @@ jobs:
   - task: GoTool@0
     displayName: "Install Go"
     inputs:
-      version: '1.21.4'
+      version: '1.23.2'
 
   - script: |
       git clone https://ms-henglu:$PAT@github.com/ms-henglu/terraform-provider-azurerm.git
