@@ -39,7 +39,8 @@ jobs:
       git checkout --track testrepo/${{ parameters.branch }}
       git config --global user.email "henglu@microsoft.com"
       git config --global user.name "Heng Lu"
-      git cherry-pick 001879171e7badd9e8dafd19cae66aedace5c584
+      # ms-henglu/feature-breaking-change-detection-v4.18.0
+      git cherry-pick 9075dd4afc721d18fce7bd105c1514b03cb5ca5e
       git status
     displayName: 'Clone terraform-provider-azurerm'
     env:
