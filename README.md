@@ -18,7 +18,7 @@ This solution is used to detect SDK behavioral change when upgrade SDK for terra
 ```shell
 git remote add mshenglu https://github.com/ms-henglu/terraform-provider-azurerm.git
 git fetch mshenglu
-git cherry-pick 001879171e7badd9e8dafd19cae66aedace5c584
+git cherry-pick 9075dd4afc721d18fce7bd105c1514b03cb5ca5e
 ```
 2. Run acceptance test. If `ImportStateVerify attributes not equivalent`, it means there's a behavioral change during SDK upgrade.
 
